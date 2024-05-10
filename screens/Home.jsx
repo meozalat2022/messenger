@@ -1,10 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
-import React, { useLayoutEffect } from "react";
+import React, { useContext, useLayoutEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
+import { UserType } from "../UserContext";
 const Home = () => {
   const navigation = useNavigation();
+
+  const { userId, setUserId } = useContext(UserType);
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: "",
