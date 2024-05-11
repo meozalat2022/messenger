@@ -56,7 +56,9 @@ const createToken = (userId) => {
   };
 
   // Generate the token with a secret key and expiration time
-  const token = jwt.sign(payload, "Q$r2K6W8n!jCW%Zk", { expiresIn: "1h" });
+  const token = jwt.sign(payload, "messengermessengermessenger", {
+    expiresIn: "1h",
+  });
 
   return token;
 };
@@ -92,4 +94,44 @@ app.post("/login", (req, res) => {
       console.log("error in finding the user", error);
       res.status(500).json({ message: "Internal server Error!" });
     });
+});
+
+//endpoint to retrieve all users except the logged in user
+
+app.get("/users/:userId", (req, res) => {
+  const loggedInUser = req.params.userId;
+
+  User.find({ _id: { $ne: loggedInUser } })
+    .then((users) => {
+      res.status(200).json(users);
+    })
+    .catch((err) => {
+      console.log("Users not found", err);
+      res.status(500).json({ message: "Users not found" });
+    });
+});
+
+//endpoint to add friend request
+
+app.post("/fiend-request", async (req, res) => {
+  const { currentUserId, selectedUserId } = req.body;
+
+  try {
+    // update selected user friend request array
+
+    await User.findByIdAndUpdate(selectedUserId, {
+      $push: { friendRequests: currentUserId },
+    });
+
+    // update current user sent friend request array
+
+    await User.findByIdAndUpdate(currentUserId, {
+      $push: { sentFriendRequests: selectedUserId },
+    });
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.log("Error sending request", err);
+    res.sendStatus(500);
+  }
 });
