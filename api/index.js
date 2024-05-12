@@ -135,3 +135,53 @@ app.post("/fiend-request", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+//endpoint to show all the friend-requests of a particular user
+app.get("/friend-request/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    //fetch the user document based on the User id
+    const user = await User.findById(userId)
+
+      .populate("friendRequests", "name email image")
+      .lean();
+
+    const friendRequests = user.friendRequests;
+
+    res.json(friendRequests);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+//endpoint to accept a friend-request of a particular person
+app.post("/friend-request/accept", async (req, res) => {
+  try {
+    const { senderId, recipientId } = req.body;
+
+    //retrieve the documents of sender and the recipient
+    const sender = await User.findById(senderId);
+    const recipient = await User.findById(recipientId);
+
+    sender.friends.push(recipientId);
+    recipient.friends.push(senderId);
+
+    recipient.friendRequests = recipient.friendRequests.filter(
+      (request) => request.toString() !== senderId.toString()
+    );
+
+    sender.sentFriendRequests = sender.sentFriendRequests.filter(
+      (request) => request.toString() !== recipientId.toString
+    );
+
+    await sender.save();
+    await recipient.save();
+
+    res.status(200).json({ message: "Friend Request accepted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
