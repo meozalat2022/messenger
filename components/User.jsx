@@ -7,7 +7,7 @@ const User = ({ item }) => {
   const [requestSent, setRequestSent] = useState(false);
   const handleFriendRequest = async (currentUserId, selectedUserId) => {
     try {
-      const res = await fetch("http://192.168.1.45:8000/fiend-request", {
+      const res = await fetch("http://192.168.1.5:8000/fiend-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

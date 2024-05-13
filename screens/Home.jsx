@@ -20,7 +20,12 @@ const Home = () => {
       ),
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+          <Ionicons
+            onPress={() => navigation.navigate("Chats")}
+            name="chatbox-ellipses-outline"
+            size={24}
+            color="black"
+          />
           <MaterialIcons
             onPress={() => navigation.navigate("Friends")}
             name="people-outline"
@@ -40,7 +45,7 @@ const Home = () => {
       setUserId(userId);
     };
     axios
-      .get(`http://192.168.1.7:8000/users/${userId}`)
+      .get(`http://192.168.1.5:8000/users/${userId}`)
       .then((response) => {
         setUsers(response.data);
       })
@@ -49,7 +54,7 @@ const Home = () => {
       });
     fetchUsers();
   }, []);
-  console.log(users);
+  // console.log(users);
   return (
     <View>{users && users?.map((item, index) => <User item={item} />)}</View>
   );
