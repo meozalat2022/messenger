@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import User from "./models/user.js";
 import Message from "./models/message.js";
+import multer from "multer";
 const app = express();
 const port = 8000;
 app.use(cors());
@@ -198,5 +199,78 @@ app.get("/accepted-friends/:userId", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Configure multer for handling file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "files/"); // Specify the desired destination folder
+  },
+  filename: function (req, file, cb) {
+    // Generate a unique filename for the uploaded file
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+//endpoint to post messages and store it in the backend
+
+app.post("/messages", upload.single("imageFile"), async (req, res) => {
+  try {
+    const { senderId, recipientId, messageType, message } = req.body;
+
+    const newMessage = new Message({
+      senderId,
+      recipientId,
+      messageType,
+      message,
+      timeStamp: new Date(),
+      imageUrl: messageType === "image",
+    });
+
+    await newMessage.save();
+    res.status(200).json({ message: "message sent successfully" });
+  } catch (error) {
+    res.status(500).json("internal error");
+    console.log("Server error", error);
+  }
+});
+
+//end point to catch the user details to design the chat bar header
+
+app.get("/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    //fetch user data from the user Id
+
+    const recipientId = await User.findById(userId);
+
+    res.json(recipientId);
+  } catch (error) {
+    res.status(500).json("Error occurred");
+    console.log(error);
+  }
+});
+
+//end point fetch messages between two users
+app.get("/messages/:senderId/:recipientId", async (req, res) => {
+  try {
+    const { senderId, recipientId } = req.params;
+
+    const messages = await Message.find({
+      $or: [
+        { senderId: senderId, recipientId: recipientId },
+        { senderId: recipientId, recipientId: senderId },
+      ],
+    }).populate("senderId", "_id name");
+
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json("error occurred");
+    console.log(error);
   }
 });

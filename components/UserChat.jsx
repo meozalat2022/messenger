@@ -8,7 +8,7 @@ const UserChat = ({ item }) => {
     <Pressable
       onPress={() =>
         navigation.navigate("Messages", {
-          recepientId: item._id,
+          recipientId: item._id,
         })
       }
       style={{
